@@ -3,39 +3,54 @@ package com.example.tourism_service.service;
 import com.example.tourism_service.entity.Guide;
 import com.example.tourism_service.repository.GuideRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
 public class GuideService {
+
     private final GuideRepository guideRepository;
 
     public GuideService(GuideRepository guideRepository) {
         this.guideRepository = guideRepository;
     }
 
-    public List<Guide> findAll() {
+    // Получить всех гидов
+    public List<Guide> getAllGuides() {
         return guideRepository.findAll();
     }
 
-    public Guide findById(Long id) {
+    // Найти гида по ID
+    public Guide getGuideById(Long id) {
         return guideRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Guide not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Гид с ID " + id + " не найден"));
     }
 
-    public Guide save(Guide guide) {
+    // Создать нового гида
+    @Transactional
+    public Guide createGuide(Guide guide) {
         return guideRepository.save(guide);
     }
 
-    public Guide update(Long id, Guide guideDetails) {
-        Guide guide = findById(id);
-        guide.setName(guideDetails.getName());
-        guide.setEmail(guideDetails.getEmail());
-        guide.setPhoneNumber(guideDetails.getPhoneNumber());
-        guide.setBiography(guideDetails.getBiography());
+    // Обновить данные гида (Исправленная версия без ошибки getName)
+    @Transactional
+    public Guide updateGuide(Long id, Guide guideDetails) {
+        Guide guide = getGuideById(id);
+
+        // Обновляем поля, используя те имена, которые в Guide.java
+        guide.setFirstName(guideDetails.getFirstName());
+        guide.setLastName(guideDetails.getLastName());
+        guide.setSpecialization(guideDetails.getSpecialization());
+        guide.setExperienceYears(guideDetails.getExperienceYears());
+
         return guideRepository.save(guide);
     }
 
-    public void delete(Long id) {
-        guideRepository.deleteById(id);
+    // Удалить гида
+    @Transactional
+    public void deleteGuide(Long id) {
+        Guide guide = getGuideById(id);
+        guideRepository.delete(guide);
     }
 }
