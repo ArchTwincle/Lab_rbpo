@@ -3,18 +3,16 @@ name: Java CI with Maven and SSL
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4  # Обновлено до v4
+    - uses: actions/checkout@v4
 
     - name: Set up JDK 21
-      uses: actions/setup-java@v4 # Обновлено до v4
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -26,13 +24,13 @@ jobs:
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > src/main/resources/staviskiy_server.jks
 
     - name: Build with Maven
+      # Флаг -DskipTests обязателен, чтобы не искать базу данных при сборке
       run: mvn clean package -DskipTests
       env:
         SSL_STORE_PASSWORD: ${{ secrets.SSL_STORE_PASSWORD }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }} 
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4 # ТУТ БЫЛА ОШИБКА, теперь v4
+      uses: actions/upload-artifact@v4
       with:
         name: tourism-service-secure
         path: target/*.jar
