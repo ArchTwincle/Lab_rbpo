@@ -1,30 +1,49 @@
 package com.example.tourism_service.controller;
 
+import com.example.tourism_service.dto.JwtResponse;
+import com.example.tourism_service.service.AuthService;
 import com.example.tourism_service.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    private final AuthService authService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+
+    // Вход: проверяем пароль и выдаем пару токенов
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponse> login(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        String password = request.get("password");
+
+        // Аутентификация через Spring Security
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        // Если успешно — генерируем токены и создаем сессию в БД
+        return ResponseEntity.ok(authService.login(username));
     }
 
+    // Регистрация: только для АДМИНА
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Map<String, String> request) {
-        try {
-            String username = request.get("username");
-            String password = request.get("password");
-            String role = request.get("role"); // ADMIN, USER или GUIDE
+        userService.register(request.get("username"), request.get("password"), request.get("role"));
+        return ResponseEntity.ok("Пользователь создан");
+    }
 
-            userService.register(username, password, role);
-            return ResponseEntity.ok("Пользователь " + username + " успешно создан с ролью " + role);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ошибка: " + e.getMessage());
-        }
+    // Обновление: замена старого Refresh-токена на новую пару
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        return ResponseEntity.ok(authService.refresh(refreshToken));
     }
 }
