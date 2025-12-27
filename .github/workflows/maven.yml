@@ -25,7 +25,7 @@ jobs:
 
     - name: Build with Maven
       # Флаг -DskipTests обязателен, чтобы не искать базу данных при сборке
-      run: mvn clean package -DskipTests
+      run: mvn clean package
       env:
         SSL_STORE_PASSWORD: ${{ secrets.SSL_STORE_PASSWORD }}
 
