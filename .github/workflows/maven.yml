@@ -24,7 +24,7 @@ jobs:
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > src/main/resources/staviskiy_server.jks
 
     - name: Build with Maven
-      # Флаг -DskipTests обязателен, чтобы не искать базу данных при сборке
+
       run: mvn clean package
       env:
         SSL_STORE_PASSWORD: ${{ secrets.SSL_STORE_PASSWORD }}
